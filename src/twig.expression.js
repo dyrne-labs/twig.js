@@ -103,6 +103,15 @@ module.exports = function (Twig) {
         Twig.expression.type.slice
     ]);
 
+    // The closing bracket expected for each token that opens a group. Used to
+    // detect an unclosed group left on the stack after an expression is compiled.
+    Twig.expression.closingBracket = {
+        [Twig.expression.type.object.start]: '}',
+        [Twig.expression.type.array.start]: ']',
+        [Twig.expression.type.parameter.start]: ')',
+        [Twig.expression.type.subexpression.start]: ')'
+    };
+
     // Some commonly used compile and parse functions.
     Twig.expression.fn = {
         compile: {
@@ -1323,8 +1332,17 @@ module.exports = function (Twig) {
             Twig.log.trace('Twig.expression.compile: ', 'Output is', output);
         }
 
+        // A well formed expression closes every group it opens, so once the
+        // input is consumed the stack should only hold operators. An opening
+        // bracket left here is an unclosed group and must be reported rather
+        // than silently flushed into the output.
         while (stack.length > 0) {
-            output.push(stack.pop());
+            token = stack.pop();
+            if (Object.prototype.hasOwnProperty.call(Twig.expression.closingBracket, token.type)) {
+                throw new Twig.Error('Expected closing \'' + Twig.expression.closingBracket[token.type] + '\' in expression \'' + rawToken.value + '\'');
+            }
+
+            output.push(token);
         }
 
         Twig.log.trace('Twig.expression.compile: ', 'Final output is', output);

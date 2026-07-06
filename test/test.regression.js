@@ -36,4 +36,22 @@ describe('Twig.js Regression Tests ->', function () {
         const testTemplate = twig({data: str});
         testTemplate.render().should.equal(expected);
     });
+
+    it('#896 should report a syntax error for an unclosed brace instead of rendering [object Object]', function () {
+        // '{{{ ... }}' opens an object with the extra '{' that is never closed.
+        // It used to render as '[object Object]' rather than failing.
+        (function () {
+            twig({rethrow: true, data: 'Hey {{{data.variables.aa | default(\'there\') }}'}).render({data: {variables: {}}});
+        }).should.throw(/Expected closing '}'/);
+
+        (function () {
+            twig({rethrow: true, data: 'Hey {{{data.variables.aa | default(\'there\') }}}'}).render({data: {variables: {}}});
+        }).should.throw(/Expected closing '}'/);
+    });
+
+    it('#896 should still render a triple-open brace whose object is closed', function () {
+        twig({data: '{% for val in arr %}{{{(val.value):null}|json_encode}}{% endfor %}'})
+            .render({arr: [{value: 'one'}, {value: 'two'}]})
+            .should.equal('{"one":null}{"two":null}');
+    });
 });
