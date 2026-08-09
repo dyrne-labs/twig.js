@@ -54,4 +54,36 @@ describe('Twig.js Regression Tests ->', function () {
             .render({arr: [{value: 'one'}, {value: 'two'}]})
             .should.equal('{"one":null}{"two":null}');
     });
+
+    it('should keep the token tree serialisable when a method call has arguments', function () {
+        // `peek` points at the next token in the same expression. For a method
+        // call with arguments the next token is the parameter.end, whose
+        // `params` contains the token that pointed at it -- so an enumerable
+        // `peek` closes a cycle and JSON.stringify throws "Converting circular
+        // structure to JSON".
+        //
+        // Twig.compiler.compile serialises template.tokens, so this broke
+        // precompilation outright. vite-plugin-twig-drupal hits it for every
+        // template Storybook loads.
+        (function () {
+            JSON.stringify(twig({data: '{{ a.b(\'x\') }}'}).tokens);
+        }).should.not.throw();
+
+        (function () {
+            JSON.stringify(twig({data: '{% do a.b(c) %}'}).tokens);
+        }).should.not.throw();
+    });
+
+    it('should still resolve peek for the strictVariables default check', function () {
+        // The only reader of `peek`. Making it non-enumerable must not hide it.
+        twig({
+            rethrow: true,
+            strict_variables: true,
+            data: '{{ missing|default(\'fallback\') }}'
+        }).render({}).should.equal('fallback');
+
+        (function () {
+            twig({rethrow: true, strict_variables: true, data: '{{ missing }}'}).render({});
+        }).should.throw(/does not exist/);
+    });
 });

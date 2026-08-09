@@ -1320,7 +1320,19 @@ module.exports = function (Twig) {
 
         while (tokens.length > 0) {
             token = tokens.shift();
-            token.peek = tokens[0];
+            // Non-enumerable, because this points at another token in the same
+            // expression and JSON.stringify(template.tokens) is a supported
+            // operation -- Twig.compiler.compile does exactly that. An
+            // enumerable peek makes the token tree self-referential and throws
+            // "Converting circular structure to JSON". Nothing serialises it;
+            // the only reader is the strictVariables check below, which reaches
+            // for it directly.
+            Object.defineProperty(token, 'peek', {
+                value: tokens[0],
+                enumerable: false,
+                configurable: true,
+                writable: true
+            });
             tokenTemplate = Twig.expression.handler[token.type];
 
             Twig.log.trace('Twig.expression.compile: ', 'Compiling ', token);
