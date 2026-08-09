@@ -63,9 +63,10 @@ module.exports = function (Twig) {
             .map(key => [key, value[key]]);
     };
 
-    // `Twig.lib.boolval` comes from locutus and reports an empty Twig hash as true,
-    // where PHP sees an empty array and reports false. Comparisons need the PHP
-    // answer, so they use this instead.
+    // `Twig.lib.boolval` is locutus's, which reads a JS object as a PHP object and so
+    // reports even an empty one as true. That is correct for PHP — only an empty
+    // array is falsy, an empty stdClass is not — but a JS object here is a Twig hash,
+    // which compiles to a PHP associative array. Comparisons need that reading.
     const phpBoolval = function (value) {
         if (value === undefined || value === null) {
             return false;
