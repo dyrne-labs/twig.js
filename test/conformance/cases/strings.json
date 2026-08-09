@@ -1,0 +1,29 @@
+{
+  "comment": "Escaping and undefined access — the two places where a divergence changes what reaches the page rather than just what a comparison returns.",
+  "cases": [
+    { "name": "escape/autoescape-html", "template": "{{ v }}", "data": { "v": "<b>&</b>" }, "options": { "autoescape": "html" } },
+    { "name": "escape/autoescape-quotes", "template": "{{ v }}", "data": { "v": "\"it's\"" }, "options": { "autoescape": "html" } },
+    { "name": "escape/raw", "template": "{{ v|raw }}", "data": { "v": "<b>&</b>" }, "options": { "autoescape": "html" } },
+    { "name": "escape/explicit-e", "template": "{{ v|e }}", "data": { "v": "<b>&</b>" } },
+    { "name": "escape/e-html-attr", "template": "{{ v|e('html_attr') }}", "data": { "v": "a b\"c" } },
+    { "name": "escape/e-js", "template": "{{ v|e('js') }}", "data": { "v": "a'b<c" } },
+    { "name": "escape/e-url", "template": "{{ v|e('url') }}", "data": { "v": "a b&c" } },
+    { "name": "escape/e-css", "template": "{{ v|e('css') }}", "data": { "v": "a b" } },
+    { "name": "escape/double-escape", "template": "{{ v|e|e }}", "data": { "v": "<b>" } },
+    { "name": "escape/already-escaped-in-autoescape", "template": "{{ v|e }}", "data": { "v": "<b>" }, "options": { "autoescape": "html" } },
+    { "name": "escape/ampersand-entity", "template": "{{ v }}", "data": { "v": "&amp;" }, "options": { "autoescape": "html" } },
+
+    { "name": "undefined/print", "template": "[{{ nope }}]" },
+    { "name": "undefined/nested-access", "template": "[{{ a.b.c }}]", "data": { "a": {} } },
+    { "name": "undefined/array-index", "template": "[{{ a[5] }}]", "data": { "a": [1] } },
+    { "name": "undefined/strict-variable", "template": "{{ nope }}", "options": { "strict_variables": true } },
+    { "name": "undefined/strict-attribute", "template": "{{ a.missing }}", "data": { "a": {} }, "options": { "strict_variables": true } },
+    { "name": "undefined/default-filter", "template": "{{ nope|default('fallback') }}" },
+    { "name": "undefined/is-defined-guard", "template": "{{ nope is defined ? 'T' : 'F' }}" },
+
+    { "name": "string/concat-null", "template": "[{{ null ~ 'a' }}]" },
+    { "name": "string/interpolation", "template": "{{ \"pre #{1 + 2} post\" }}" },
+    { "name": "string/single-quote-no-interpolation", "template": "{{ 'pre #{1 + 2} post' }}" },
+    { "name": "string/escaped-backslash", "template": "{{ \"a\\\\b\" }}" }
+  ]
+}

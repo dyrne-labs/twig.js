@@ -1,0 +1,49 @@
+{
+  "comment": "Filters that are ports of PHP functions, where twig.js reimplements behaviour rather than delegating to a JavaScript equivalent that happens to agree.",
+  "cases": [
+    { "name": "filter/join-mixed", "template": "{{ [1, null, 'a']|join('-') }}" },
+    { "name": "filter/join-hash", "template": "{{ {a: 1, b: 2}|join('-') }}" },
+    { "name": "filter/join-final", "template": "{{ [1, 2, 3]|join(', ', ' and ') }}" },
+    { "name": "filter/split-limit", "template": "{{ 'a,b,c,d'|split(',', 2)|join('|') }}" },
+    { "name": "filter/split-empty-delimiter", "template": "{{ 'abcd'|split('', 2)|join('|') }}" },
+
+    { "name": "filter/slice-negative-start", "template": "{{ 'abcdef'|slice(-3, 2) }}" },
+    { "name": "filter/slice-past-end", "template": "{{ 'abc'|slice(1, 10) }}" },
+    { "name": "filter/slice-array", "template": "{{ [1, 2, 3, 4]|slice(1, 2)|join(',') }}" },
+    { "name": "filter/first-string", "template": "{{ 'abc'|first }}" },
+    { "name": "filter/last-hash", "template": "{{ {a: 1, b: 2}|last }}" },
+
+    { "name": "filter/sort-mixed", "template": "{{ [3, '10', 2]|sort|join(',') }}" },
+    { "name": "filter/sort-strings", "template": "{{ ['b', 'A', 'a']|sort|join(',') }}" },
+    { "name": "filter/reverse-string", "template": "{{ 'abc'|reverse }}" },
+    { "name": "filter/keys-hash", "template": "{{ {a: 1, b: 2}|keys|join(',') }}" },
+    { "name": "filter/merge-arrays", "template": "{{ ([1, 2]|merge([3]))|join(',') }}" },
+    { "name": "filter/length-string", "template": "{{ 'abc'|length }}" },
+    { "name": "filter/length-hash", "template": "{{ {a: 1, b: 2}|length }}" },
+    { "name": "filter/column", "template": "{{ [{v: 1}, {v: 2}]|column('v')|join(',') }}" },
+
+    { "name": "filter/upper-lower", "template": "{{ 'AbC'|upper }}|{{ 'AbC'|lower }}" },
+    { "name": "filter/capitalize", "template": "{{ 'hello world'|capitalize }}" },
+    { "name": "filter/title", "template": "{{ 'hello world'|title }}" },
+    { "name": "filter/trim-chars", "template": "{{ 'xxabcxx'|trim('x') }}" },
+    { "name": "filter/striptags-allowed", "template": "{{ '<b>a</b><i>b</i>'|striptags('<b>') }}" },
+    { "name": "filter/nl2br", "template": "{{ \"a\\nb\"|nl2br }}" },
+    { "name": "filter/replace", "template": "{{ 'a-b'|replace({'-': '+'}) }}" },
+    { "name": "filter/url-encode", "template": "{{ 'a b&c'|url_encode }}" },
+    { "name": "filter/default-empty-string", "template": "{{ ''|default('fallback') }}" },
+    { "name": "filter/default-zero", "template": "{{ 0|default('fallback') }}" },
+    { "name": "filter/default-false", "template": "{{ false|default('fallback') }}" },
+
+    {
+      "name": "filter/date-format",
+      "template": "{{ d|date('Y-m-d H:i:s') }}",
+      "data": { "d": { "__php": "DateTime", "value": "2026-01-02 03:04:05" } }
+    },
+    {
+      "name": "filter/date-day-name",
+      "template": "{{ d|date('D, d M Y') }}",
+      "data": { "d": { "__php": "DateTime", "value": "2026-01-02 03:04:05" } }
+    },
+    { "name": "filter/date-from-string", "template": "{{ '2026-01-02'|date('Y-m-d') }}" }
+  ]
+}

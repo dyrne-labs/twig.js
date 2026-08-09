@@ -1,0 +1,36 @@
+{
+  "comment": "How each engine turns a number into a string. PHP's `precision` ini setting truncates float output; JavaScript prints every digit it has. Any template printing a computed float is exposed to this.",
+  "cases": [
+    { "name": "num/int", "template": "{{ 42 }}" },
+    { "name": "num/negative-int", "template": "{{ -42 }}" },
+    { "name": "num/float-whole", "template": "{{ 1.0 }}" },
+    { "name": "num/float-fraction", "template": "{{ 1.5 }}" },
+    { "name": "num/float-sum", "template": "{{ 0.1 + 0.2 }}" },
+    { "name": "num/division-recurring", "template": "{{ 10 / 3 }}" },
+    { "name": "num/division-exact", "template": "{{ 10 / 2 }}" },
+    { "name": "num/large-exponent", "template": "{{ 1e20 }}" },
+    { "name": "num/small-exponent", "template": "{{ 1e-7 }}" },
+    { "name": "num/large-int", "template": "{{ 9007199254740993 }}" },
+    { "name": "num/trailing-zero-float", "template": "{{ 1.50 }}" },
+    { "name": "num/string-to-number", "template": "{{ '3' + 4 }}" },
+    { "name": "num/numeric-string-concat", "template": "{{ '3' ~ 4 }}" },
+
+    { "name": "num/round-half-up", "template": "{{ 2.5|round }}" },
+    { "name": "num/round-half-up-odd", "template": "{{ 3.5|round }}" },
+    { "name": "num/round-half-negative", "template": "{{ -2.5|round }}" },
+    { "name": "num/round-precision", "template": "{{ 1.005|round(2) }}" },
+    { "name": "num/round-floor", "template": "{{ 2.7|round(0, 'floor') }}" },
+    { "name": "num/round-ceil", "template": "{{ 2.1|round(0, 'ceil') }}" },
+    { "name": "num/abs-negative-float", "template": "{{ -1.5|abs }}" },
+
+    { "name": "num/number-format-default", "template": "{{ 1234.5678|number_format }}" },
+    { "name": "num/number-format-decimals", "template": "{{ 1234.5678|number_format(2) }}" },
+    { "name": "num/number-format-separators", "template": "{{ 1234.5678|number_format(2, ',', '.') }}" },
+    { "name": "num/format-float", "template": "{{ '%.2f'|format(1.005) }}" },
+    { "name": "num/format-int-padding", "template": "{{ '%05d'|format(42) }}" },
+
+    { "name": "num/max-mixed", "template": "{{ max(1, '2', 3.0) }}" },
+    { "name": "num/min-mixed", "template": "{{ min(1, '2', 3.0) }}" },
+    { "name": "num/range-step", "template": "{{ range(0, 10, 3)|join(',') }}" }
+  ]
+}

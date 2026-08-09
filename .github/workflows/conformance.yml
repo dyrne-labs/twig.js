@@ -1,0 +1,36 @@
+name: "conformance"
+
+# Compares twig.js against Twig PHP. Kept separate from `tests.yml` so that a
+# conformance divergence never blocks unrelated work, and so the mocha suite
+# stays runnable without Docker.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  conformance:
+    name: "Twig PHP parity"
+
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout code"
+        uses: "actions/checkout@v6"
+
+      - name: "Setup Node and npm"
+        uses: "actions/setup-node@v5"
+        with:
+          cache: "npm"
+          node-version: 22
+
+      - name: "Install Node dependencies"
+        run: "npm ci"
+
+      # PHP and Twig live in the image, pinned there so that this job and a
+      # contributor's laptop measure against the same engine.
+      - name: "Build the oracle image"
+        run: "docker build -t twig-oracle test/conformance"
+
+      - name: "Compare the engines"
+        run: "npm run test:conformance"
