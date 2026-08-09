@@ -144,6 +144,27 @@ describe('Twig.js Expression Operators ->', function () {
 
             // Numbers against strings, following the PHP 8 rules: numeric strings
             // compare numerically, everything else compares as strings.
+            //
+            // What counts as numeric is PHP's NUM_STRING grammar, which is narrower
+            // than JavaScript's: it takes a leading dot or a trailing one, and allows
+            // surrounding whitespace, but only the C whitespace set — a non-breaking
+            // space makes the string non-numeric, where JavaScript would trim it away.
+            ['42 == "+42"', {}, 'true'],
+            ['42 == "00042"', {}, 'true'],
+            ['42 == "   42"', {}, 'true'],
+            ['42 == "42   "', {}, 'true'],
+            // Supplied as data rather than written as literals: twig.js does not
+            // decode escape sequences inside a quoted literal, so "\t" there is a
+            // backslash and a t. That is a separate gap from the comparison rules.
+            ['42 == s', {s: '\t\n42\r '}, 'true'],
+            ['42 == s', {s: ' 42'}, 'false'],
+            ['"5." == 5', {}, 'true'],
+            ['".5" == 0.5', {}, 'true'],
+            ['".5e3" == 500', {}, 'true'],
+            ['1000 == "1_000"', {}, 'false'],
+            ['26 == "0x1A"', {}, 'false'],
+            ['1 == "1e"', {}, 'false'],
+            ['0 == "."', {}, 'false'],
             ['1 == "1"', {}, 'true'],
             ['1 == "01"', {}, 'true'],
             ['"1" == "01"', {}, 'true'],

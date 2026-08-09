@@ -30,12 +30,36 @@ module.exports = function (Twig) {
     Twig.lib.date = date;
     Twig.lib.boolval = boolval;
 
-    // PHP's definition of a numeric string: an optionally signed integer or float,
-    // with an optional exponent, surrounded by optional whitespace.
-    const numericStringPattern = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?$/;
+    // PHP's NUM_STRING grammar, transcribed from the language reference:
+    //
+    //   WHITESPACES      \s*
+    //   LNUM             [0-9]+
+    //   DNUM             ([0-9]*[\.]{LNUM}) | ({LNUM}[\.][0-9]*)
+    //   EXPONENT_DNUM    (({LNUM} | {DNUM}) [eE][+-]? {LNUM})
+    //   INT_NUM_STRING   {WHITESPACES} [+-]? {LNUM} {WHITESPACES}
+    //   FLOAT_NUM_STRING {WHITESPACES} [+-]? ({DNUM} | {EXPONENT_DNUM}) {WHITESPACES}
+    //   NUM_STRING       ({INT_NUM_STRING} | {FLOAT_NUM_STRING})
+    //
+    // https://www.php.net/manual/en/language.types.numeric-strings.php
+    //
+    // Trailing whitespace only became acceptable in PHP 8; before that a numeric
+    // string could lead with whitespace but not follow with it.
+    //
+    // PHP's whitespace here is the C set, not Unicode's: a non-breaking space or a
+    // line separator makes a string non-numeric. Spelling the class out matters,
+    // because JavaScript's `\s` and `String.trim()` both accept those characters
+    // and would call " 42" numeric where PHP does not.
+    const PHP_WHITESPACE = '[ \\t\\n\\r\\v\\f]*';
+    const LNUM = '\\d+';
+    const DNUM = `(?:\\d*\\.${LNUM}|${LNUM}\\.\\d*)`;
+    const EXPONENT_DNUM = `(?:(?:${LNUM}|${DNUM})[eE][+-]?${LNUM})`;
+
+    const numericStringPattern = new RegExp(
+        `^${PHP_WHITESPACE}[+-]?(?:${LNUM}|${DNUM}|${EXPONENT_DNUM})${PHP_WHITESPACE}$`
+    );
 
     const isNumericString = function (value) {
-        return typeof value === 'string' && numericStringPattern.test(value.trim());
+        return typeof value === 'string' && numericStringPattern.test(value);
     };
 
     const isPlainObject = function (value) {
