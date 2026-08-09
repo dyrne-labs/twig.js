@@ -134,8 +134,10 @@ module.exports = function (Twig) {
             return true;
         }
 
-        // Since PHP 8, null compared against a string casts null to ''. This rule is
-        // narrower than the boolean rule below, so it has to be applied first.
+        // Null compared against a string casts null to '', so null == '' holds while
+        // null == 'php' does not. Long-standing PHP behaviour, unchanged by PHP 8 and
+        // verified against 7.4. Narrower than the boolean rule below, so it goes first.
+        // https://www.php.net/manual/en/types.comparisons.php
         if (a === null && typeof b === 'string') {
             return looseEqualsStrings('', b);
         }
@@ -170,7 +172,9 @@ module.exports = function (Twig) {
         }
 
         // A number against a string compares numerically only when the string is
-        // numeric; since PHP 8 anything else compares the two as strings.
+        // numeric; since PHP 8 anything else compares the two as strings, which is why
+        // 0 == 'foo' and '' == 0 are false where PHP 7 called both true.
+        // https://wiki.php.net/rfc/string_to_number_comparison
         if ((typeof a === 'string' && !isNumericString(a)) ||
             (typeof b === 'string' && !isNumericString(b))) {
             return String(a) === String(b);
