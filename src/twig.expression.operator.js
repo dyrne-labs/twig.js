@@ -12,6 +12,10 @@ module.exports = function (Twig) {
         rightToLeft: 'rightToLeft'
     };
 
+    // Operators that need their operands untouched. Everything else still collapses
+    // an array operand to its length, which is how twig.js has always behaved.
+    const rawArrayOperators = ['in', 'not in', '??', '==', '!='];
+
     const containment = function (a, b) {
         if (b === undefined || b === null) {
             return null;
@@ -172,7 +176,7 @@ module.exports = function (Twig) {
             a = stack.pop();
         }
 
-        if (operator !== 'in' && operator !== 'not in' && operator !== '??') {
+        if (!rawArrayOperators.includes(operator)) {
             if (a && Array.isArray(a)) {
                 a = a.length;
             }
@@ -305,7 +309,7 @@ module.exports = function (Twig) {
                 break;
 
             case '==':
-                stack.push(a == b);
+                stack.push(Twig.lib.looseEquals(a, b));
                 break;
 
             case '!==':
@@ -313,7 +317,7 @@ module.exports = function (Twig) {
                 break;
 
             case '!=':
-                stack.push(a != b);
+                stack.push(!Twig.lib.looseEquals(a, b));
                 break;
 
             case 'or':

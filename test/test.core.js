@@ -190,8 +190,12 @@ describe('Twig.js Core ->', function () {
         twig({data: '{{ null == val }}'}).render({val: undefined}).should.equal('true');
 
         twig({data: '{{ null == val }}'}).render({val: 'test'}).should.equal('false');
-        twig({data: '{{ null == val }}'}).render({val: 0}).should.equal('false');
-        twig({data: '{{ null == val }}'}).render({val: false}).should.equal('false');
+        twig({data: '{{ null == val }}'}).render({val: true}).should.equal('false');
+
+        // PHP casts both sides to boolean when one of them is null or boolean, so
+        // these are true there even though JavaScript's `==` says otherwise.
+        twig({data: '{{ null == val }}'}).render({val: 0}).should.equal('true');
+        twig({data: '{{ null == val }}'}).render({val: false}).should.equal('true');
     });
 
     it('should recognize object literals', function () {
