@@ -1,0 +1,38 @@
+{
+  "comment": "Boolean context: what each engine considers true. JavaScript and PHP disagree about '0', empty arrays and empty hashes, and every one of those reaches an {% if %} in a real template.",
+  "cases": [
+    { "name": "if/zero", "template": "{% if 0 %}T{% else %}F{% endif %}" },
+    { "name": "if/zero-string", "template": "{% if '0' %}T{% else %}F{% endif %}" },
+    { "name": "if/zero-point-zero-string", "template": "{% if '0.0' %}T{% else %}F{% endif %}" },
+    { "name": "if/empty-string", "template": "{% if '' %}T{% else %}F{% endif %}" },
+    { "name": "if/space-string", "template": "{% if ' ' %}T{% else %}F{% endif %}" },
+    { "name": "if/empty-array", "template": "{% if [] %}T{% else %}F{% endif %}" },
+    { "name": "if/empty-hash", "template": "{% if {} %}T{% else %}F{% endif %}" },
+    { "name": "if/array-with-zero", "template": "{% if [0] %}T{% else %}F{% endif %}" },
+    { "name": "if/null", "template": "{% if null %}T{% else %}F{% endif %}" },
+    { "name": "if/undefined", "template": "{% if nope %}T{% else %}F{% endif %}" },
+    { "name": "if/negative-number", "template": "{% if -1 %}T{% else %}F{% endif %}" },
+    { "name": "if/float-zero", "template": "{% if 0.0 %}T{% else %}F{% endif %}" },
+
+    { "name": "and/zero-string", "template": "{{ ('0' and true) ? 'T' : 'F' }}" },
+    { "name": "or/empty-array", "template": "{{ ([] or false) ? 'T' : 'F' }}" },
+    { "name": "not/zero-string", "template": "{{ (not '0') ? 'T' : 'F' }}" },
+    { "name": "not/empty-hash", "template": "{{ (not {}) ? 'T' : 'F' }}" },
+
+    { "name": "ternary/zero-string", "template": "{{ '0' ? 'T' : 'F' }}" },
+    { "name": "ternary/elvis-zero-string", "template": "{{ '0' ?: 'fallback' }}" },
+    { "name": "ternary/elvis-empty-array", "template": "{{ [] ?: 'fallback' }}" },
+    { "name": "coalesce/null", "template": "{{ null ?? 'fallback' }}" },
+    { "name": "coalesce/false", "template": "{{ false ?? 'fallback' }}" },
+    { "name": "coalesce/zero", "template": "{{ 0 ?? 'fallback' }}" },
+    { "name": "coalesce/undefined", "template": "{{ nope ?? 'fallback' }}" },
+
+    { "name": "test/empty-zero", "template": "{{ (0 is empty) ? 'T' : 'F' }}" },
+    { "name": "test/empty-zero-string", "template": "{{ ('0' is empty) ? 'T' : 'F' }}" },
+    { "name": "test/empty-hash", "template": "{{ ({} is empty) ? 'T' : 'F' }}" },
+    { "name": "test/empty-whitespace", "template": "{{ (' ' is empty) ? 'T' : 'F' }}" },
+    { "name": "test/null-is-null", "template": "{{ (null is null) ? 'T' : 'F' }}" },
+    { "name": "test/undefined-is-defined", "template": "{{ (nope is defined) ? 'T' : 'F' }}" },
+    { "name": "test/zero-is-even", "template": "{{ (0 is even) ? 'T' : 'F' }}" }
+  ]
+}

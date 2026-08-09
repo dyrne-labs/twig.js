@@ -1,0 +1,80 @@
+{
+  "_comment": [
+    "Places where twig.js knowingly differs from Twig PHP.",
+    "",
+    "Each entry records the output twig.js actually produces and why that is",
+    "tolerated. An entry whose case starts agreeing FAILS the run, so a closed",
+    "gap has to be deleted here — that rule is what stops this file becoming a",
+    "graveyard of reasons nobody has revisited.",
+    "",
+    "Adding an entry is a decision, not a formality. If the reason is only 'this",
+    "is hard to fix', it probably belongs in an issue instead."
+  ],
+
+  "if/empty-hash": {
+    "js": "T",
+    "reason": "Twig.lib.boolval is locutus's, which reports {} as true. locutus's own convention reads a plain object as a PHP associative array (locutus.objectsAsArrays, on by default and honoured by is_array), and PHP calls an empty array falsy — boolval just never consults it. Correcting this reaches every if/and/or/ternary in the library, so it is deliberately out of scope for a comparison fix."
+  },
+  "not/empty-hash": {
+    "js": "F",
+    "reason": "Same boolval gap as if/empty-hash, seen through `not`."
+  },
+
+  "num/float-sum": {
+    "js": "0.30000000000000004",
+    "reason": "PHP's `precision` ini (14 by default) truncates float output; JavaScript prints all 17 significant digits. Both hold the same IEEE 754 double — only the stringification differs. Matching PHP would mean reimplementing its float formatter, and because `precision` is deployment-configurable the target is not even fixed."
+  },
+  "num/division-recurring": {
+    "js": "3.3333333333333335",
+    "reason": "Same float stringification difference as num/float-sum."
+  },
+  "num/large-int": {
+    "js": "9007199254740992",
+    "reason": "Above 2^53 JavaScript numbers lose integer precision, where PHP has a 64-bit int type. A language-level difference, not a twig.js defect: fixing it needs BigInt throughout the expression evaluator."
+  },
+
+  "num/large-exponent": {
+    "js": "<error>",
+    "reason": "twig.js cannot parse scientific-notation literals at all — 1e20, 1E20, 1.5e3 and 1e-3 are all syntax errors. This is a parser gap and a real bug worth its own fix; the entry exists so the suite can land before that work does."
+  },
+  "num/small-exponent": {
+    "js": "<error>",
+    "reason": "Same scientific-notation parser gap as num/large-exponent."
+  },
+
+  "num/abs-negative-float": {
+    "js": "1.5",
+    "reason": "Filter-versus-unary-minus precedence. PHP's Twig binds `-1.5|abs` as `-(1.5|abs)`, so it prints -1.5; twig.js applies the filter to the negative literal. `(-1.5)|abs` agrees in both, so the divergence is in precedence, not in `abs` itself."
+  },
+
+  "cmp/numeric-string-order": {
+    "js": "F",
+    "reason": "'10' > '9' compares numerically in PHP because both operands are numeric strings; twig.js compares them as strings. The same PHP 8 rule the `==` fix implements, applied to the relational operators — worth fixing there next."
+  },
+
+  "filter/sort-mixed": {
+    "js": "10,2,3",
+    "reason": "PHP's sort() compares numeric strings numerically, so '10' sorts after 3; twig.js sorts lexically. Downstream of the same numeric-string rule as cmp/numeric-string-order."
+  },
+  "filter/join-final": {
+    "js": "1, 2, 3",
+    "reason": "twig.js's `join` ignores the second argument, the final separator Twig added in 2.x. A missing feature rather than a semantic difference."
+  },
+  "filter/column": {
+    "js": "<error>",
+    "reason": "The `column` filter is not implemented in twig.js."
+  },
+  "filter/default-false": {
+    "js": "",
+    "reason": "`false|default('fallback')` returns the fallback in PHP, because `default` tests emptiness and PHP calls false empty. twig.js keeps false. Another face of the boolval gap, reached through a filter."
+  },
+
+  "string/interpolation": {
+    "js": "pre #{1 + 2} post",
+    "reason": "String interpolation with #{...} inside double quotes is not implemented in twig.js; the literal passes through untouched."
+  },
+  "string/escaped-backslash": {
+    "js": "a\\\\b",
+    "reason": "twig.js does not collapse an escaped backslash inside a double-quoted literal, so \\\\ stays two characters where PHP renders one."
+  }
+}
