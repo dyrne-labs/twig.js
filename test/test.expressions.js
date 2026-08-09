@@ -159,13 +159,15 @@ describe('Twig.js Expressions ->', function () {
     });
 
     describe('Comparison Operators ->', function () {
+        // `equal` records what Twig PHP returns for `a == b`, which is not always
+        // what JavaScript's `==` returns: a boolean operand casts the other side to
+        // boolean, so `true == 'true'` holds while `false == 'false'` does not.
         const equalityData = [
-            {a: true, b: 'true'},
-            {a: 1, b: '1'},
-            {a: 1, b: 1},
-            {a: 1, b: 1},
-            {a: 'str', b: 'str'},
-            {a: false, b: 'false'}
+            {a: true, b: 'true', equal: true},
+            {a: 1, b: '1', equal: true},
+            {a: 1, b: 1, equal: true},
+            {a: 'str', b: 'str', equal: true},
+            {a: false, b: 'false', equal: false}
         ];
         const booleanData = [
             {a: true, b: true},
@@ -217,7 +219,7 @@ describe('Twig.js Expressions ->', function () {
 
             equalityData.forEach(pair => {
                 const output = testTemplate.render(pair);
-                output.should.equal((pair.a == pair.b).toString());
+                output.should.equal(pair.equal.toString());
             });
         });
         it('should support not equals', function () {
@@ -228,7 +230,7 @@ describe('Twig.js Expressions ->', function () {
             });
             equalityData.forEach(pair => {
                 const output = testTemplate.render(pair);
-                output.should.equal((pair.a != pair.b).toString());
+                output.should.equal((!pair.equal).toString());
             });
         });
         it('should support boolean or', function () {

@@ -108,6 +108,97 @@ describe('Twig.js Expression Operators ->', function () {
         });
     });
 
+    describe('== and != ->', function () {
+        // Every expected value below was captured by rendering the same expression
+        // through Twig PHP 3.28 on PHP 8.5, so this table is the reference
+        // implementation's behaviour rather than JavaScript's `==`.
+        const phpEqualityData = [
+            // null (and undefined variables, which Twig treats as null) against booleans.
+            ['null == false', {}, 'true'],
+            ['null == true', {}, 'false'],
+            ['false == null', {}, 'true'],
+            ['x == false', {x: null}, 'true'],
+            ['x == false', {}, 'true'],
+            ['null != false', {}, 'false'],
+            ['null != true', {}, 'true'],
+
+            // null against other scalars.
+            ['null == 0', {}, 'true'],
+            ['null == ""', {}, 'true'],
+            ['null == "a"', {}, 'false'],
+            ['null == "0"', {}, 'false'],
+            ['null == null', {}, 'true'],
+
+            // A boolean operand coerces the other side to boolean.
+            ['false == 0', {}, 'true'],
+            ['false == ""', {}, 'true'],
+            ['false == "0"', {}, 'true'],
+            ['false == "false"', {}, 'false'],
+            ['false == "a"', {}, 'false'],
+            ['true == "true"', {}, 'true'],
+            ['true == "a"', {}, 'true'],
+            ['true == ""', {}, 'false'],
+            ['true == 1', {}, 'true'],
+            ['true == 2', {}, 'true'],
+            ['true == 0', {}, 'false'],
+
+            // Numbers against strings, following the PHP 8 rules: numeric strings
+            // compare numerically, everything else compares as strings.
+            ['1 == "1"', {}, 'true'],
+            ['1 == "01"', {}, 'true'],
+            ['"1" == "01"', {}, 'true'],
+            ['"10" == "1e1"', {}, 'true'],
+            ['1 == 1.0', {}, 'true'],
+            ['0 == "foo"', {}, 'false'],
+            ['"" == 0', {}, 'false'],
+            ['"abc" == 0', {}, 'false'],
+            ['"abc" == "abc"', {}, 'true'],
+            ['"abc" == "ABC"', {}, 'false'],
+
+            // Twig arrays and hashes are both PHP arrays, so they compare by contents.
+            ['[] == false', {}, 'true'],
+            ['[] == true', {}, 'false'],
+            ['[1] == true', {}, 'true'],
+            ['[1, 2] == [1, 2]', {}, 'true'],
+            ['[1, 2] == [3, 4]', {}, 'false'],
+            ['[1, 2] == [1, 2, 3]', {}, 'false'],
+            ['[1, 2] == 2', {}, 'false'],
+            ['["1", "2"] == [1, 2]', {}, 'true'],
+            ['{} == false', {}, 'true'],
+            ['{a: 1} == {a: 1}', {}, 'true'],
+            ['{a: 1} == {a: 2}', {}, 'false'],
+            ['{a: 1} == {b: 1}', {}, 'false'],
+            ['{a: 1, b: 2} == {b: 2, a: 1}', {}, 'true'],
+            ['{a: 1} == true', {}, 'true']
+        ];
+
+        it('should match Twig PHP loose comparison semantics', function () {
+            phpEqualityData.forEach(([expression, context, expected]) => {
+                const output = twig({data: '{{ ' + expression + ' }}'}).render(context);
+
+                output.should.equal(expected, expression + ' with ' + JSON.stringify(context));
+            });
+        });
+
+        it('should treat a missing boolean prop as null when compared against false', function () {
+            // Reduced from CivicTheme's text-icon.twig, which is reached through
+            // link.twig. `is_external` is documented as [boolean,null], so it is
+            // frequently absent, and Twig PHP takes the `show_full_text` branch
+            // while twig.js used to take the other one.
+            const testTemplate = twig({
+                data:
+                    '{%- set show_full_text = icon_group_disabled or ' +
+                    '(icon_placement == \'before\' and is_external == false) -%}' +
+                    '{%- if show_full_text -%}full{%- else -%}split{%- endif -%}'
+            });
+
+            testTemplate.render({icon_placement: 'before'}).should.equal('full');
+            testTemplate.render({icon_placement: 'before', is_external: null}).should.equal('full');
+            testTemplate.render({icon_placement: 'before', is_external: false}).should.equal('full');
+            testTemplate.render({icon_placement: 'before', is_external: true}).should.equal('split');
+        });
+    });
+
     describe('b-and ->', function () {
         it('should return correct value if needed bit is set or 0 if not', function () {
             const testTemplate = twig({data: '{{ a b-and b }}'});
